@@ -341,7 +341,8 @@
       
         
           
-            <h4 id="1、Grand-Central-Dispatch-（GCD）概要"><a href="#1、Grand-Central-Dispatch-（GCD）概要" class="headerlink" title="1、Grand Central Dispatch （GCD）概要"></a>1、Grand Central Dispatch （GCD）概要</h4><h5 id="1-1、什么是GCD"><a href="#1-1、什么是GCD" class="headerlink" title="1.1、什么是GCD"></a>1.1、什么是GCD</h5><p>是异步执行任务的技术之一。开发者只需要定义想要执行的任务并追加到适当的GCD中，就能生成必要的线程并计划执行任务。由于线程管理是作为系统的一部分实现的，因此可以统一管理，也可执行任务。</p>
+            <h4 id="0、前言"><a href="#0、前言" class="headerlink" title="0、前言"></a>0、前言</h4><p>三年前某君共享了几本电子书给我，记得有一本里面介绍了GCD。近来想重新温习一下，电子书却已经找不到了，就又找某君让他共享了下。<br>温故知新，现在再看这本书中的GCD确实有新的收获。第一次看的感受、是否有获取到里面的点已经记得不清了，也不能说自己完全掌握里面的知识点，但是重新温习已经看过文章或者书籍确实能有全新的感觉。<br>原本这篇笔记是记录在Evernote中的，却被自己拿来调试GitHub个人博客，成为了自己个人博客的第一篇文章，就写个前言记录下吧。</p>
+<h4 id="1、Grand-Central-Dispatch-（GCD）概要"><a href="#1、Grand-Central-Dispatch-（GCD）概要" class="headerlink" title="1、Grand Central Dispatch （GCD）概要"></a>1、Grand Central Dispatch （GCD）概要</h4><h5 id="1-1、什么是GCD"><a href="#1-1、什么是GCD" class="headerlink" title="1.1、什么是GCD"></a>1.1、什么是GCD</h5><p>是异步执行任务的技术之一。开发者只需要定义想要执行的任务并追加到适当的GCD中，就能生成必要的线程并计划执行任务。由于线程管理是作为系统的一部分实现的，因此可以统一管理，也可执行任务。</p>
 <h5 id="1-2、多线程编程"><a href="#1-2、多线程编程" class="headerlink" title="1.2、多线程编程"></a>1.2、多线程编程</h5><ol>
 <li>CPU执行一个的CPU命令列是一条无分叉的路径，即为线程</li>
 <li>CPU执行多条不同路径上的不同命令，即为多线程</li>

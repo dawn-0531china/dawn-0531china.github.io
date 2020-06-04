@@ -248,6 +248,182 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/04/WKWebView%E7%9A%84%E8%89%B0%E9%9A%BE%E4%B9%8B%E8%B7%AF/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="黎明">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="黎明的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/06/04/WKWebView%E7%9A%84%E8%89%B0%E9%9A%BE%E4%B9%8B%E8%B7%AF/" itemprop="url">WKWebView的艰难之路</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-06-04T21:29:58+08:00">
+                2020-06-04
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h3 id="WKWebView的艰难之路"><a href="#WKWebView的艰难之路" class="headerlink" title="WKWebView的艰难之路"></a>WKWebView的艰难之路</h3><h4 id="1、Cookie的设置"><a href="#1、Cookie的设置" class="headerlink" title="1、Cookie的设置"></a>1、Cookie的设置</h4><h5 id="1-1、WKWebView-loadRequest前，在request-header中设置Cookie，解决首个请求Cookie带不上的问题"><a href="#1-1、WKWebView-loadRequest前，在request-header中设置Cookie，解决首个请求Cookie带不上的问题" class="headerlink" title="1.1、WKWebView loadRequest前，在request header中设置Cookie，解决首个请求Cookie带不上的问题"></a>1.1、WKWebView loadRequest前，在request header中设置Cookie，解决首个请求Cookie带不上的问题</h5><figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> cookies: [<span class="type">String</span>: <span class="type">Any</span>] = ...</span><br><span class="line"><span class="keyword">let</span> cookieString = cookies.<span class="built_in">map</span> &#123; <span class="string">"\($0.key)=\($0.value)"</span> &#125;.joined(separator: <span class="string">";"</span>)</span><br><span class="line">request.setValue(cookieString, forHTTPHeaderField: <span class="string">"Cookie"</span>)</span><br></pre></td></tr></table></figure>
+
+<h5 id="1-2、通过系统API设置cookie"><a href="#1-2、通过系统API设置cookie" class="headerlink" title="1.2、通过系统API设置cookie"></a>1.2、通过系统API设置cookie</h5><figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> cookies: [<span class="type">String</span>: <span class="type">Any</span>] = ...</span><br><span class="line"><span class="keyword">for</span> (name, value) <span class="keyword">in</span> cookies &#123;</span><br><span class="line">    <span class="keyword">let</span> properties: [<span class="type">HTTPCookiePropertyKey</span> : <span class="type">Any</span>] = [</span><br><span class="line">        <span class="type">HTTPCookiePropertyKey</span>.domain: <span class="string">".koolearn.com"</span>,</span><br><span class="line">        <span class="type">HTTPCookiePropertyKey</span>.path: <span class="string">"/"</span>,</span><br><span class="line">        <span class="type">HTTPCookiePropertyKey</span>.name: name,</span><br><span class="line">        <span class="type">HTTPCookiePropertyKey</span>.value: value,</span><br><span class="line">        <span class="type">HTTPCookiePropertyKey</span>.expires: <span class="type">Date</span>(timeIntervalSinceNow: <span class="number">2629743</span>),</span><br><span class="line">        <span class="type">HTTPCookiePropertyKey</span>.version: <span class="number">0</span>,</span><br><span class="line">        <span class="type">HTTPCookiePropertyKey</span>(<span class="string">"HttpOnly"</span>): <span class="literal">false</span></span><br><span class="line">    ]</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">let</span> cookie = <span class="type">HTTPCookie</span>(properties: properties) &#123;</span><br><span class="line">        <span class="keyword">if</span> #available(iOS <span class="number">11.0</span>, *) &#123;</span><br><span class="line">            <span class="type">WKWebsiteDataStore</span>.<span class="keyword">default</span>().httpCookieStore.setCookie(cookie, completionHandler: <span class="literal">nil</span>)</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="type">HTTPCookieStorage</span>.shared.setCookie(cookie)</span><br><span class="line">            <span class="type">HTTPCookieStorage</span>.shared.cookieAcceptPolicy = .always</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>很多技术文章说WKWebView的Cookie数据和HTTPCookieStorage是分离的。通过实测WKWebView可以读到HTTPCookieStorage中的Cookie中的数据，但在时机上会存在延时。</p>
+<h5 id="1-3、通过注入本地JS脚本设置Cookie"><a href="#1-3、通过注入本地JS脚本设置Cookie" class="headerlink" title="1.3、通过注入本地JS脚本设置Cookie"></a>1.3、通过注入本地JS脚本设置Cookie</h5><p>通过JS脚本设置cookie，需要在configuration赋值给webView前就将脚本注入</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> cookies: [<span class="type">String</span>: <span class="type">Any</span>] = ...</span><br><span class="line"><span class="keyword">let</span> cookiesString = (cookies.<span class="built_in">map</span> &#123; <span class="string">"document.cookie='\($0.key)=\($0.value)';\n"</span> &#125;).joined()</span><br><span class="line"><span class="keyword">let</span> cookieScript = <span class="type">WKUserScript</span>(source: cookiesString, injectionTime: .atDocumentStart, forMainFrameOnly: <span class="literal">false</span>)</span><br><span class="line">webView.configuration.userContentController.addUserScript(cookieScript)</span><br></pre></td></tr></table></figure>
+
+<h5 id="1-4、重定向下的Cookie设置"><a href="#1-4、重定向下的Cookie设置" class="headerlink" title="1.4、重定向下的Cookie设置"></a>1.4、重定向下的Cookie设置</h5><p>当WKWebView发生跨域302重定向请求时，Cookie时无法同步到新的请求链接上去的。当然，由于每一次页面跳转都会调用回调函数：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">webView</span><span class="params">(<span class="number">_</span> webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping <span class="params">(WKNavigationActionPolicy)</span></span></span> -&gt; <span class="type">Void</span>)</span><br></pre></td></tr></table></figure>
+
+<p>可以在该回调里拦截302请求，copy request，在request header中带上cookie并重新loadRequest。不过这种方法依然无法解决页面iframe跨域请求的Cookie问题，毕竟[WKWebView loadRequest:]只适合mainFrame请求。</p>
+<h4 id="2、UA"><a href="#2、UA" class="headerlink" title="2、UA"></a>2、UA</h4><h5 id="2-1、全局UA的设置"><a href="#2-1、全局UA的设置" class="headerlink" title="2.1、全局UA的设置"></a>2.1、全局UA的设置</h5><p>WKWebView全局UA的生成是通过在AppDelegate创建一个WKWebView的实例，通过evaluateJavaScript(“navigator.userAgent”)读取到已有的UA，进行处理后（加入应用标示、版本等信息），保存到NSUserDefaults中。<br>在设置全局UA后，再通过evaluateJavaScript(“navigator.userAgent”)读取到的UA信息已经是设置的全局UA，因此在处理的时候要注意下。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">self</span>.evaluateJavaScript(<span class="string">"navigator.userAgent"</span>) &#123; (result, error) <span class="keyword">in</span></span><br><span class="line">    <span class="keyword">var</span> newUserAgent = <span class="string">""</span></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">let</span> userAgent = result <span class="keyword">as</span>? <span class="type">String</span> &#123;</span><br><span class="line">        ...</span><br><span class="line">        ...</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">    callback?(newUserAgent)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在AppDelegate中应用启动后进行设置</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">WKWebView</span>().setCustomUserAgent &#123; (userAgent) <span class="keyword">in</span></span><br><span class="line">    <span class="type">UserDefaults</span>.standard.register(defaults: [<span class="string">"UserAgent"</span>: userAgent, <span class="string">"User-Agent"</span>: userAgent])</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>全局UA的设置过程是一个异步过程，在应用启动后立刻打开网页会存在UA设置不成功的情况，在开发的时候一定要注意。</p>
+<h5 id="2-2、通过系统API对不同的WKWebView设置UA"><a href="#2-2、通过系统API对不同的WKWebView设置UA" class="headerlink" title="2.2、通过系统API对不同的WKWebView设置UA"></a>2.2、通过系统API对不同的WKWebView设置UA</h5><figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@available</span>(iOS <span class="number">9.0</span>, *)</span><br><span class="line"><span class="keyword">open</span> <span class="keyword">var</span> customUserAgent: <span class="type">String?</span></span><br></pre></td></tr></table></figure>
+
+<p>WKWebView自有的设置UA的API在iOS 12.0 ～ iOS 12.2的系统中是一个异步的设置过程，直接使用可能会造成在这些系统范围的设备UA设置不成功的情况。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> <span class="keyword">let</span> ua = <span class="type">UserDefaults</span>.standard.string(forKey: <span class="string">"UserAgent"</span>), ua.<span class="built_in">contains</span>(<span class="string">"Koolearn; donut"</span>) &#123;</span><br><span class="line">    webView.customUserAgent = ua</span><br><span class="line">    loadURLRequest()</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    webView.setCustomUserAgent &#123; [<span class="keyword">weak</span> <span class="keyword">self</span>] (ua) <span class="keyword">in</span></span><br><span class="line">        <span class="keyword">guard</span> <span class="keyword">let</span> strongSelf = <span class="keyword">self</span> <span class="keyword">else</span> &#123; <span class="keyword">return</span> &#125;</span><br><span class="line">        strongSelf.webView.customUserAgent = ua</span><br><span class="line">        strongSelf.loadURLRequest()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在单独设置WKWebView的UA时，先判断全局的UA是否设置成功，如果成功就读取全局UA对customUserAgent进行赋值，如果全局的UA没有设置成功，可以通过evaluateJavaScript(“navigator.userAgent”)进行单独的UA设置。</p>
+<h4 id="3、缓存"><a href="#3、缓存" class="headerlink" title="3、缓存"></a>3、缓存</h4><h5 id="3-1、URLProtocol-设置缓存"><a href="#3-1、URLProtocol-设置缓存" class="headerlink" title="3.1、URLProtocol 设置缓存"></a>3.1、URLProtocol 设置缓存</h5><p>通过注册https、http协议，可以在遵从URLProtocol协议的实例中拦截到所有的网络请求，在请求响应成功后对资源数据进行缓存处理。在处理静态网页资源缓存上这样处理是没有问题。<br>但是在存在POST网络请求的网页使用URLProtocol进行资源缓存就会造成POST请求的body数据丢失的情况。<br>由于WKWebView是一个单独的线程进行处理网络请求的，在使用URLProtocol注册https、http后，就会将请求转发到应用的进程中，处于性能考虑，会将POST请求的body抛弃。<br>在使用URLProtocol时，不要注册https、http。</p>
+<h5 id="3-2、URLRequest-CachePolicy"><a href="#3-2、URLRequest-CachePolicy" class="headerlink" title="3.2、URLRequest.CachePolicy"></a>3.2、URLRequest.CachePolicy</h5><p>初始化URLRequest的时候可以指定缓存策略使用协议缓存useProtocolCachePolicy。<br>在服务端返回资源时，会将资源的最后更新资源通过Last-Modified返回给客户端，客户端再次发起请求时通过If-Modified-Since或者If-Unmodified-Since带上Last-Modified，服务端检查该时间是否和服务端资源的最后更新时间是否一致：如果一致，则返回304状态码，不返回资源；如果不一致，则返回200状态码和修改后的资源，并带上资源最后的修改时间。</p>
+<img src="/2020/06/04/WKWebView%E7%9A%84%E8%89%B0%E9%9A%BE%E4%B9%8B%E8%B7%AF/1.png" class="">
+
+<h4 id="4、WKWebView内自动播放音视频"><a href="#4、WKWebView内自动播放音视频" class="headerlink" title="4、WKWebView内自动播放音视频"></a>4、WKWebView内自动播放音视频</h4><p>如果WKWebView和原生的交互使用prompt弹窗同步交互方法，会存在打断音视频自动播放的情况。如果有音视频自动播放的需求，在交互方法上可以选用系统提供的WKScriptMessageHandler进行交互。</p>
+<h5 id="4-1、iOS10及后续版本的设置方法"><a href="#4-1、iOS10及后续版本的设置方法" class="headerlink" title="4.1、iOS10及后续版本的设置方法"></a>4.1、iOS10及后续版本的设置方法</h5><figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> configuration = <span class="type">WKWebViewConfiguration</span>()</span><br><span class="line"><span class="keyword">if</span> #available(iOS <span class="number">10.0</span>, *) &#123;</span><br><span class="line">    configuration.mediaTypesRequiringUserActionForPlayback = <span class="type">WKAudiovisualMediaTypes</span>(rawValue: <span class="number">0</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="4-2、iOS9版本的设置方法"><a href="#4-2、iOS9版本的设置方法" class="headerlink" title="4.2、iOS9版本的设置方法"></a>4.2、iOS9版本的设置方法</h5><figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> configuration = <span class="type">WKWebViewConfiguration</span>()</span><br><span class="line">configuration.requiresUserActionForMediaPlayback = <span class="literal">false</span></span><br></pre></td></tr></table></figure>
+
+<h5 id="4-3、iOS8版本的设置方法"><a href="#4-3、iOS8版本的设置方法" class="headerlink" title="4.3、iOS8版本的设置方法"></a>4.3、iOS8版本的设置方法</h5><figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> configuration = <span class="type">WKWebViewConfiguration</span>()</span><br><span class="line">configuration.mediaPlaybackRequiresUserAction = <span class="literal">false</span></span><br></pre></td></tr></table></figure>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-categories" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/02/Grand-Central-Dispatch/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -626,7 +802,7 @@
             
               <div class="site-state-item site-state-posts">
                 <a href="/archives">
-                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-count">2</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

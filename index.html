@@ -341,43 +341,15 @@
       
         
           
-            <h3 id="WKWebView的艰难之路"><a href="#WKWebView的艰难之路" class="headerlink" title="WKWebView的艰难之路"></a>WKWebView的艰难之路</h3><h4 id="1、Cookie的设置"><a href="#1、Cookie的设置" class="headerlink" title="1、Cookie的设置"></a>1、Cookie的设置</h4><h5 id="1-1、WKWebView-loadRequest前，在request-header中设置Cookie，解决首个请求Cookie带不上的问题"><a href="#1-1、WKWebView-loadRequest前，在request-header中设置Cookie，解决首个请求Cookie带不上的问题" class="headerlink" title="1.1、WKWebView loadRequest前，在request header中设置Cookie，解决首个请求Cookie带不上的问题"></a>1.1、WKWebView loadRequest前，在request header中设置Cookie，解决首个请求Cookie带不上的问题</h5><figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> cookies: [<span class="type">String</span>: <span class="type">Any</span>] = ...</span><br><span class="line"><span class="keyword">let</span> cookieString = cookies.<span class="built_in">map</span> &#123; <span class="string">"\($0.key)=\($0.value)"</span> &#125;.joined(separator: <span class="string">";"</span>)</span><br><span class="line">request.setValue(cookieString, forHTTPHeaderField: <span class="string">"Cookie"</span>)</span><br></pre></td></tr></table></figure>
-
-<h5 id="1-2、通过系统API设置cookie"><a href="#1-2、通过系统API设置cookie" class="headerlink" title="1.2、通过系统API设置cookie"></a>1.2、通过系统API设置cookie</h5><figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> cookies: [<span class="type">String</span>: <span class="type">Any</span>] = ...</span><br><span class="line"><span class="keyword">for</span> (name, value) <span class="keyword">in</span> cookies &#123;</span><br><span class="line">    <span class="keyword">let</span> properties: [<span class="type">HTTPCookiePropertyKey</span> : <span class="type">Any</span>] = [</span><br><span class="line">        <span class="type">HTTPCookiePropertyKey</span>.domain: <span class="string">".koolearn.com"</span>,</span><br><span class="line">        <span class="type">HTTPCookiePropertyKey</span>.path: <span class="string">"/"</span>,</span><br><span class="line">        <span class="type">HTTPCookiePropertyKey</span>.name: name,</span><br><span class="line">        <span class="type">HTTPCookiePropertyKey</span>.value: value,</span><br><span class="line">        <span class="type">HTTPCookiePropertyKey</span>.expires: <span class="type">Date</span>(timeIntervalSinceNow: <span class="number">2629743</span>),</span><br><span class="line">        <span class="type">HTTPCookiePropertyKey</span>.version: <span class="number">0</span>,</span><br><span class="line">        <span class="type">HTTPCookiePropertyKey</span>(<span class="string">"HttpOnly"</span>): <span class="literal">false</span></span><br><span class="line">    ]</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">let</span> cookie = <span class="type">HTTPCookie</span>(properties: properties) &#123;</span><br><span class="line">        <span class="keyword">if</span> #available(iOS <span class="number">11.0</span>, *) &#123;</span><br><span class="line">            <span class="type">WKWebsiteDataStore</span>.<span class="keyword">default</span>().httpCookieStore.setCookie(cookie, completionHandler: <span class="literal">nil</span>)</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="type">HTTPCookieStorage</span>.shared.setCookie(cookie)</span><br><span class="line">            <span class="type">HTTPCookieStorage</span>.shared.cookieAcceptPolicy = .always</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>很多技术文章说WKWebView的Cookie数据和HTTPCookieStorage是分离的。通过实测WKWebView可以读到HTTPCookieStorage中的Cookie中的数据，但在时机上会存在延时。</p>
-<h5 id="1-3、通过注入本地JS脚本设置Cookie"><a href="#1-3、通过注入本地JS脚本设置Cookie" class="headerlink" title="1.3、通过注入本地JS脚本设置Cookie"></a>1.3、通过注入本地JS脚本设置Cookie</h5><p>通过JS脚本设置cookie，需要在configuration赋值给webView前就将脚本注入</p>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> cookies: [<span class="type">String</span>: <span class="type">Any</span>] = ...</span><br><span class="line"><span class="keyword">let</span> cookiesString = (cookies.<span class="built_in">map</span> &#123; <span class="string">"document.cookie='\($0.key)=\($0.value)';\n"</span> &#125;).joined()</span><br><span class="line"><span class="keyword">let</span> cookieScript = <span class="type">WKUserScript</span>(source: cookiesString, injectionTime: .atDocumentStart, forMainFrameOnly: <span class="literal">false</span>)</span><br><span class="line">webView.configuration.userContentController.addUserScript(cookieScript)</span><br></pre></td></tr></table></figure>
-
-<h5 id="1-4、重定向下的Cookie设置"><a href="#1-4、重定向下的Cookie设置" class="headerlink" title="1.4、重定向下的Cookie设置"></a>1.4、重定向下的Cookie设置</h5><p>当WKWebView发生跨域302重定向请求时，Cookie时无法同步到新的请求链接上去的。当然，由于每一次页面跳转都会调用回调函数：</p>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">webView</span><span class="params">(<span class="number">_</span> webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping <span class="params">(WKNavigationActionPolicy)</span></span></span> -&gt; <span class="type">Void</span>)</span><br></pre></td></tr></table></figure>
-
-<p>可以在该回调里拦截302请求，copy request，在request header中带上cookie并重新loadRequest。不过这种方法依然无法解决页面iframe跨域请求的Cookie问题，毕竟[WKWebView loadRequest:]只适合mainFrame请求。</p>
-<h4 id="2、UA"><a href="#2、UA" class="headerlink" title="2、UA"></a>2、UA</h4><h5 id="2-1、全局UA的设置"><a href="#2-1、全局UA的设置" class="headerlink" title="2.1、全局UA的设置"></a>2.1、全局UA的设置</h5><p>WKWebView全局UA的生成是通过在AppDelegate创建一个WKWebView的实例，通过evaluateJavaScript(“navigator.userAgent”)读取到已有的UA，进行处理后（加入应用标示、版本等信息），保存到NSUserDefaults中。<br>在设置全局UA后，再通过evaluateJavaScript(“navigator.userAgent”)读取到的UA信息已经是设置的全局UA，因此在处理的时候要注意下。</p>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">self</span>.evaluateJavaScript(<span class="string">"navigator.userAgent"</span>) &#123; (result, error) <span class="keyword">in</span></span><br><span class="line">    <span class="keyword">var</span> newUserAgent = <span class="string">""</span></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">let</span> userAgent = result <span class="keyword">as</span>? <span class="type">String</span> &#123;</span><br><span class="line">        ...</span><br><span class="line">        ...</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">    callback?(newUserAgent)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>在AppDelegate中应用启动后进行设置</p>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">WKWebView</span>().setCustomUserAgent &#123; (userAgent) <span class="keyword">in</span></span><br><span class="line">    <span class="type">UserDefaults</span>.standard.register(defaults: [<span class="string">"UserAgent"</span>: userAgent, <span class="string">"User-Agent"</span>: userAgent])</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>全局UA的设置过程是一个异步过程，在应用启动后立刻打开网页会存在UA设置不成功的情况，在开发的时候一定要注意。</p>
-<h5 id="2-2、通过系统API对不同的WKWebView设置UA"><a href="#2-2、通过系统API对不同的WKWebView设置UA" class="headerlink" title="2.2、通过系统API对不同的WKWebView设置UA"></a>2.2、通过系统API对不同的WKWebView设置UA</h5><figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@available</span>(iOS <span class="number">9.0</span>, *)</span><br><span class="line"><span class="keyword">open</span> <span class="keyword">var</span> customUserAgent: <span class="type">String?</span></span><br></pre></td></tr></table></figure>
-
-<p>WKWebView自有的设置UA的API在iOS 12.0 ～ iOS 12.2的系统中是一个异步的设置过程，直接使用可能会造成在这些系统范围的设备UA设置不成功的情况。</p>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> <span class="keyword">let</span> ua = <span class="type">UserDefaults</span>.standard.string(forKey: <span class="string">"UserAgent"</span>), ua.<span class="built_in">contains</span>(<span class="string">"Koolearn; donut"</span>) &#123;</span><br><span class="line">    webView.customUserAgent = ua</span><br><span class="line">    loadURLRequest()</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    webView.setCustomUserAgent &#123; [<span class="keyword">weak</span> <span class="keyword">self</span>] (ua) <span class="keyword">in</span></span><br><span class="line">        <span class="keyword">guard</span> <span class="keyword">let</span> strongSelf = <span class="keyword">self</span> <span class="keyword">else</span> &#123; <span class="keyword">return</span> &#125;</span><br><span class="line">        strongSelf.webView.customUserAgent = ua</span><br><span class="line">        strongSelf.loadURLRequest()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>在单独设置WKWebView的UA时，先判断全局的UA是否设置成功，如果成功就读取全局UA对customUserAgent进行赋值，如果全局的UA没有设置成功，可以通过evaluateJavaScript(“navigator.userAgent”)进行单独的UA设置。</p>
-<h4 id="3、缓存"><a href="#3、缓存" class="headerlink" title="3、缓存"></a>3、缓存</h4><h5 id="3-1、URLProtocol-设置缓存"><a href="#3-1、URLProtocol-设置缓存" class="headerlink" title="3.1、URLProtocol 设置缓存"></a>3.1、URLProtocol 设置缓存</h5><p>通过注册https、http协议，可以在遵从URLProtocol协议的实例中拦截到所有的网络请求，在请求响应成功后对资源数据进行缓存处理。在处理静态网页资源缓存上这样处理是没有问题。<br>但是在存在POST网络请求的网页使用URLProtocol进行资源缓存就会造成POST请求的body数据丢失的情况。<br>由于WKWebView是一个单独的线程进行处理网络请求的，在使用URLProtocol注册https、http后，就会将请求转发到应用的进程中，处于性能考虑，会将POST请求的body抛弃。<br>在使用URLProtocol时，不要注册https、http。</p>
-<h5 id="3-2、URLRequest-CachePolicy"><a href="#3-2、URLRequest-CachePolicy" class="headerlink" title="3.2、URLRequest.CachePolicy"></a>3.2、URLRequest.CachePolicy</h5><p>初始化URLRequest的时候可以指定缓存策略使用协议缓存useProtocolCachePolicy。<br>在服务端返回资源时，会将资源的最后更新资源通过Last-Modified返回给客户端，客户端再次发起请求时通过If-Modified-Since或者If-Unmodified-Since带上Last-Modified，服务端检查该时间是否和服务端资源的最后更新时间是否一致：如果一致，则返回304状态码，不返回资源；如果不一致，则返回200状态码和修改后的资源，并带上资源最后的修改时间。</p>
-<img src="/2020/06/04/WKWebView%E7%9A%84%E8%89%B0%E9%9A%BE%E4%B9%8B%E8%B7%AF/1.png" class="">
-
-<h4 id="4、WKWebView内自动播放音视频"><a href="#4、WKWebView内自动播放音视频" class="headerlink" title="4、WKWebView内自动播放音视频"></a>4、WKWebView内自动播放音视频</h4><p>如果WKWebView和原生的交互使用prompt弹窗同步交互方法，会存在打断音视频自动播放的情况。如果有音视频自动播放的需求，在交互方法上可以选用系统提供的WKScriptMessageHandler进行交互。</p>
-<h5 id="4-1、iOS10及后续版本的设置方法"><a href="#4-1、iOS10及后续版本的设置方法" class="headerlink" title="4.1、iOS10及后续版本的设置方法"></a>4.1、iOS10及后续版本的设置方法</h5><figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> configuration = <span class="type">WKWebViewConfiguration</span>()</span><br><span class="line"><span class="keyword">if</span> #available(iOS <span class="number">10.0</span>, *) &#123;</span><br><span class="line">    configuration.mediaTypesRequiringUserActionForPlayback = <span class="type">WKAudiovisualMediaTypes</span>(rawValue: <span class="number">0</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h5 id="4-2、iOS9版本的设置方法"><a href="#4-2、iOS9版本的设置方法" class="headerlink" title="4.2、iOS9版本的设置方法"></a>4.2、iOS9版本的设置方法</h5><figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> configuration = <span class="type">WKWebViewConfiguration</span>()</span><br><span class="line">configuration.requiresUserActionForMediaPlayback = <span class="literal">false</span></span><br></pre></td></tr></table></figure>
-
-<h5 id="4-3、iOS8版本的设置方法"><a href="#4-3、iOS8版本的设置方法" class="headerlink" title="4.3、iOS8版本的设置方法"></a>4.3、iOS8版本的设置方法</h5><figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> configuration = <span class="type">WKWebViewConfiguration</span>()</span><br><span class="line">configuration.mediaPlaybackRequiresUserAction = <span class="literal">false</span></span><br></pre></td></tr></table></figure>
-
-          
+          WKWebView的艰难之路1、Cookie的设置1.1、WKWebView loadRequest前，在request header中设置Cookie，解决首个请求Cookie带不上的问题123var cookies: [String: Any] = ...let cookieString = c
+          ...
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2020/06/04/WKWebView%E7%9A%84%E8%89%B0%E9%9A%BE%E4%B9%8B%E8%B7%AF/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -517,210 +489,15 @@
       
         
           
-            <h4 id="0、前言"><a href="#0、前言" class="headerlink" title="0、前言"></a>0、前言</h4><p>三年前某君共享了几本电子书给我，记得有一本里面介绍了GCD。近来想重新温习一下，电子书却已经找不到了，就又找某君让他共享了下。<br>温故知新，现在再看这本书中的GCD确实有新的收获。第一次看的感受、是否有获取到里面的点已经记得不清了，也不能说自己完全掌握里面的知识点，但是重新温习已经看过文章或者书籍确实能有全新的感觉。<br>原本这篇笔记是记录在Evernote中的，却被自己拿来调试GitHub个人博客，成为了自己个人博客的第一篇文章，就写个前言记录下吧。</p>
-<h4 id="1、Grand-Central-Dispatch-（GCD）概要"><a href="#1、Grand-Central-Dispatch-（GCD）概要" class="headerlink" title="1、Grand Central Dispatch （GCD）概要"></a>1、Grand Central Dispatch （GCD）概要</h4><h5 id="1-1、什么是GCD"><a href="#1-1、什么是GCD" class="headerlink" title="1.1、什么是GCD"></a>1.1、什么是GCD</h5><p>是异步执行任务的技术之一。开发者只需要定义想要执行的任务并追加到适当的GCD中，就能生成必要的线程并计划执行任务。由于线程管理是作为系统的一部分实现的，因此可以统一管理，也可执行任务。</p>
-<h5 id="1-2、多线程编程"><a href="#1-2、多线程编程" class="headerlink" title="1.2、多线程编程"></a>1.2、多线程编程</h5><ol>
-<li>CPU执行一个的CPU命令列是一条无分叉的路径，即为线程</li>
-<li>CPU执行多条不同路径上的不同命令，即为多线程</li>
-<li>1个CPU核一次能够执行的CPU命令始终为1</li>
-<li>CPU在执行多线程程序时，能在某个线程和其他线程之间反复多次的上下文切换，因此看上去好像1个CPU能够并列地执行多个线程一样</li>
-<li>多线程是一种易发生各种问题的编程技术。例如：<ul>
-<li>多个线程更新相同的资源会导致数据的不一致（数据竞争）</li>
-<li>停止等待事件的线程会导致多个线程相互持续等待（死锁）</li>
-<li>使用太多线程会消耗大量内存</li>
-</ul>
-</li>
-<li>主线程用来描绘用户界面、处理触摸屏幕的事件，在主线程中进行长时间的处理，会妨碍主线程的执行（阻塞）</li>
-<li>使用多线程执行长时间的处理，可以保证用户界面的响应性能</li>
-</ol>
-<h4 id="2、GCD的API"><a href="#2、GCD的API" class="headerlink" title="2、GCD的API"></a>2、GCD的API</h4><h5 id="2-1、Dispatch-Queue"><a href="#2-1、Dispatch-Queue" class="headerlink" title="2.1、Dispatch Queue"></a>2.1、Dispatch Queue</h5><ol>
-<li>Dispatch Queue 指的是执行处理的等待队列。将想要执行的处理追加到Dispath Queue中，Dispatch Queue会按照追加的顺序（先进先出FIFO，First-In-First-Out）执行处理</li>
-<li>执行处理时存在两种Dispatch Queue：一种是等待现在执行中的处理 Serial Dispatch；另一种是不等待现在执行中的处理 Concurrent Dispatch Queue</li>
-</ol>
-<table>
-<thead>
-<tr>
-<th align="left">Dispatch Queue 的种类</th>
-<th align="left">说明</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="left">Serial Dispatch Queue</td>
-<td align="left">等待现在执行中的任务处理结束</td>
-</tr>
-<tr>
-<td align="left">Concurrent Dispatch Queue</td>
-<td align="left">不等待现在执行中的任务处理结束</td>
-</tr>
-</tbody></table>
-<ol start="3">
-<li>当Dispatch Queue为Serial Dispatch Queue时要等待当前任务执行结束后才能执行下一个任务，所以使用的是一个线程执行任务</li>
-<li>当Dispatch Queue为Concurrent Dispatch Queue时不用等待当前任务执行结束就可以执行下一个任务，所以使用的是多个线程执行任务</li>
-</ol>
-<img src="/2020/06/02/Grand-Central-Dispatch/1.png" class="">
-<img src="/2020/06/02/Grand-Central-Dispatch/2.png" class="">
-
-<h5 id="2-2、dispatch-queue-create"><a href="#2-2、dispatch-queue-create" class="headerlink" title="2.2、dispatch_queue_create"></a>2.2、dispatch_queue_create</h5><ol>
-<li>GCD的API生成Dispatch Queue<ul>
-<li>第一个参数指定Dispatch Queue的名称。推荐使用应用程序ID这种逆序全程域名</li>
-<li>第二个参数指定为NULL或者DISPATCH_QUEUE_SERIAL时生成Serial Dispatch Queue；为DISPATCH_QUEUE_CONCURRNET时生成Concurrent Dispatch Queue</li>
-</ul>
-</li>
-<li>生成Serial Dispatch Queue 时的注意事项<ul>
-<li>dispatch_queue_create 可以生成多个Serial Dispatch Queue，各个Dispatch Queue将并行执行</li>
-<li>一个Serial Dispatch Queue 一次只能追加一个处理，一但追加处理系统将会生成并使用一个线程。如果生成2000个Serial Dispatch Queue，那么就生成2000个线程</li>
-<li>过多的使用线程，就会消耗大量内存，引起大量的上下文切换，大幅降低系统的响应性能。绝对不能大量的生成Serial Dispatch Queue</li>
-<li>只在避免多线程更显相同资源导致数据竞争时使用Serial Dispatch Queue</li>
-<li>不考虑数据竞争问题时，对于Concurrent Dispatch Queue 来说，不管生成多少，由于XNU内核只使用有效管理的线程，因此不会出现Serial Dispatch Queue的那些问题</li>
-</ul>
-</li>
-</ol>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 生成Serial Dispatch Queue</span></span><br><span class="line">dispatch_queue_t mySerialDispatchQueue = dispatch_queue_create(<span class="string">"com.example.gcd.MySerialDispatchQueue"</span>, <span class="type">NULL</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 生成Concurrent Dispatch Queue</span></span><br><span class="line">dispatch_queue_t myConcurrentDisaptchQueue = dispatch_queue_create(<span class="string">"com.example.gcd.MyConcurrentDispatchQueue"</span>, <span class="type">DISPATCH_QUEUE_CONCURRENT</span>);</span><br></pre></td></tr></table></figure>
-
-<h5 id="2-3、Main-Dispathc-Queue-Global-Dispatch-Queue"><a href="#2-3、Main-Dispathc-Queue-Global-Dispatch-Queue" class="headerlink" title="2.3、Main Dispathc Queue / Global Dispatch Queue"></a>2.3、Main Dispathc Queue / Global Dispatch Queue</h5><ol>
-<li>Main Dispatch Queue 是在主线程中执行的Dispatch Queue。主线程只有一个，所以Main Dispatch Queue是Serial Dispatch Queue</li>
-<li>Global Dispatch Queue 是所有应用程序都能够使用的Concurrent Dispatch Queue</li>
-<li>Global Dispatch Queue 有四个执行优先级，分别是高优先级（High Priority）、默认优先级（Default Priority）、低优先级（Low Priority）、后台优先级（Background Priority）</li>
-</ol>
-<table>
-<thead>
-<tr>
-<th align="left">名称</th>
-<th align="left">Dispatch Queue 的种类</th>
-<th align="left">说明</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="left">Main Dispatch Queue</td>
-<td align="left">Serial Disaptch Queue</td>
-<td align="left">主线程执行</td>
-</tr>
-<tr>
-<td align="left">Global Dispatch Queue（High Priority）</td>
-<td align="left">Concurrent Dispatch Queue</td>
-<td align="left">执行优先级：高（最高优先级）</td>
-</tr>
-<tr>
-<td align="left">Global Dispatch Queue（Default Priority）</td>
-<td align="left">Concurrent Dispatch Queue</td>
-<td align="left">执行优先级：默认</td>
-</tr>
-<tr>
-<td align="left">Global Dispatch Queue（Low Priority）</td>
-<td align="left">Concurrent Dispatch Queue</td>
-<td align="left">执行优先级：低</td>
-</tr>
-<tr>
-<td align="left">Global Dispatch Queue（Background Priority）</td>
-<td align="left">Concurrent Dispatch Queue</td>
-<td align="left">执行优先级：后台</td>
-</tr>
-</tbody></table>
-<ol start="4">
-<li>各种Dispatch Queue 的获取方法如下：</li>
-</ol>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Main Dispatch Queue的获取方法</span></span><br><span class="line">dispatch_queue_t mainDispatchQueue = dispatch_get_main_queue();</span><br><span class="line"></span><br><span class="line"><span class="comment">// Global Dispatch Queue(高优先级)的获取方法</span></span><br><span class="line">dispatch_queue_t globalDispatchQueueHigh = dispatch_get_global_queue(<span class="type">DISPATCH_QUEUE_PRIORITY_HIGH</span>, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Global Dispatch Queue(默认优先级)的获取方法</span></span><br><span class="line">dispatch_queue_t globalDispatchQueueDefault = dispatch_get_global_queue(<span class="type">DISPATCH_QUEUE_PRIORITY_DEFAULT</span>, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Global Dispatch Queue(低优先级)的获取方法</span></span><br><span class="line">dispatch_queue_t globalDispatchQueueLow = dispatch_get_global_queue(<span class="type">DISPATCH_QUEUE_PRIORITY_LOW</span>, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Global Dispatch Queue(后台优先级)的获取方法</span></span><br><span class="line">dispatch_queue_t globalDispatchQueueBackground = dispatch_get_global_queue(<span class="type">DISPATCH_QUEUE_PRIORITY_BACKGROUND</span>, <span class="number">0</span>);</span><br></pre></td></tr></table></figure>
-
-<h5 id="2-4、dispatch-after"><a href="#2-4、dispatch-after" class="headerlink" title="2.4、dispatch_after"></a>2.4、dispatch_after</h5><ol>
-<li>想在指定时间后执行处理，可以使用dispatch_after实现</li>
-<li>dispatch_after并不是在指定时间后执行，而是在指定时间后追加处理到Dispatch Queue</li>
-<li>使用dispatch_after代码如下：</li>
-</ol>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">dispatch_time_t time = dispatch_time(<span class="type">DISPATCH_TIME_NOW</span>, 3ull * <span class="type">NSEC_PER_SEC</span>);</span><br><span class="line">dispatch_after(time, dispatch_get_main_queue(), ^&#123;</span><br><span class="line">	<span class="type">NSLog</span>(@<span class="string">"waited at least three seconds."</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>第一个参数指定时间是dispatch_time_t类型的值。该值使用dispatch_time函数或者dispatch_walltime函数生成</li>
-<li>第二个参数指定要追加处理的Dispatch Queue</li>
-<li>第三个参数指定记述要执行处理的Block</li>
-</ul>
-<h5 id="2-5-Dispatch-Group"><a href="#2-5-Dispatch-Group" class="headerlink" title="2.5 Dispatch Group"></a>2.5 Dispatch Group</h5><ol>
-<li>在追加到Dispatch Queue中的多个处理全部结束后想执行结束处理，这个时候可以使用Dispatch Group</li>
-<li>无论向什么样的Dispatch Queue中追加处理，使用Dispatch Group都可以监视这些处理执行结束。一旦检测到所有的处理执行结束，就可以将结束处理追加到Dispatch Queue中</li>
-<li>Dispatch Group代码如下：</li>
-</ol>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">dispatch_queue_t queue = dispatch_get_global_queue(<span class="type">DISPATCH_QUEUE_PRIORITY_DEFAULT</span>, <span class="number">0</span>);</span><br><span class="line">dispatch_group_t group = dispatch_group_create();</span><br><span class="line">dispatch_group_async(group, queue, ^&#123; <span class="type">NSLog</span>(@<span class="string">"blk0"</span>) &#125;);</span><br><span class="line">dispatch_group_async(group, queue, ^&#123; <span class="type">NSLog</span>(@<span class="string">"blk1"</span>) &#125;);</span><br><span class="line">dispatch_group_async(group, queue, ^&#123; <span class="type">NSLog</span>(@<span class="string">"blk2"</span>) &#125;);</span><br><span class="line">dispatch_group_notify(group, dispatch_get_main_queue(), ^&#123;</span><br><span class="line">	<span class="type">NSLog</span>(@<span class="string">"done"</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>使用dispatch_group_create函数生成dispatch_group_t类型的Dispatch_Queue</li>
-<li>dispatch_group_async函数和dispatch_async函数相同，都追加Block到指定的Dispatch Queue中</li>
-<li>在追加到Dispatch Queue中的处理全部执行结束时，dispatch_group_notify函数就会将执行的Block追加到Dispatch Queue中。第一个参数指定为要监视的Dispatch Group，在追加到该Dispatch Group的全部处理执行结束时，将第三个参数的Block追加到第二个参数的Dispatch Queue中</li>
-</ul>
-<ol start="4">
-<li>Dispatch Group中也可以使用dispatch_group_wait函数等待全部执行结束</li>
-</ol>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">long result = dispatch_group_wait(group, <span class="type">DISPATCH_TIME_FOREVER</span>);</span><br><span class="line"><span class="keyword">if</span> (result == <span class="number">0</span>) &#123;</span><br><span class="line">	<span class="comment">// 属于 Dispatch Group的全部处理执行结束</span></span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">	<span class="comment">// 属于 Dispatch Group的某一个处理还在执行中</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>第二个参数指定为等待时间，属于dispatch_time_t类型（DISPATVH_TIME_FOREVER意味着永久等待）</li>
-<li>“等待”的意思是指一旦调用dispatch_group_wait函数，该函数就处于调用的状态而不返回。即执行dispatch_group_wait函数的线程处于停止状态。在经过dispatch_group_wait函数中指定的时间或者指定的Dispatch Group的处理全部执行结束之前，执行该函数的线程停止</li>
-<li>如果返回值不为0，意味着虽然经过了指定时间，但属于Dispatch Queue的某一个处理还在执行中；如果返回值为0，那么全部处理执行结束</li>
-</ul>
-<h5 id="2-6、dispatch-barrier-async-dispatch-barrier-sync"><a href="#2-6、dispatch-barrier-async-dispatch-barrier-sync" class="headerlink" title="2.6、dispatch_barrier_async/dispatch_barrier_sync"></a>2.6、dispatch_barrier_async/dispatch_barrier_sync</h5><ol>
-<li>dispatch_barrier_async函数会等待追加到Concurrent Dispatch Queue上的并行处理执行全部结束后，再将指定的处理追加到该Concurrent Dispatch Queue中。然后由dispatch_barrier_async函数追加的处理执行完毕后，Concurrent Dispatch Queue才恢复为一般的动作</li>
-</ol>
-<img src="/2020/06/02/Grand-Central-Dispatch/3.png" class="">
-
-<ul>
-<li>如上图所示，使用dispatch_barrier_async追加到Concurrent Dispatch Queue上的处理能有效的解决多线程引起的数据竞争问题</li>
-</ul>
-<ol>
-<li>dispatch_barrier_sync函数，提交一个栏栅函数在Dispatch Queue中，它会等待栏栅函数执行完，才会执行栏栅函数后面的任务</li>
-<li>dispatch_barrier_sync函数是在当前线程中执行追加到Dispatch Queue中的任务，而dispatch_barrier_async函数时开辟了分线程执行追加到Dispatch Queue中的任务</li>
-<li>Dispatch Barrier API 提供了高效的读写方案；只有将Barrier Blocks提交到自己创建的Concurrent Dispatch Queue才会有特殊的行为；在这样的队列上，直到前面提交到队列的任务都完成后，barrier blocks才会执行，而在barrier blocks之后提交到队列中的任务，在barrier blocks完成之前都不会运行</li>
-<li>当提交到全局队列或者没有使用DISPATCH_QUEUE_CONCURRENT创建的队列时，barrier blocks的行为与使用dispatch_async/dispatch_sync提交的blocks相同</li>
-</ol>
-<h5 id="2-7-dispatch-sync-dispatch-async"><a href="#2-7-dispatch-sync-dispatch-async" class="headerlink" title="2.7 dispatch_sync / dispatch_async"></a>2.7 dispatch_sync / dispatch_async</h5><ol>
-<li>dispatch_async函数“async”意味着“非同步”，就是将指定Block“非同步”地追加到指定的Dispatch Queue中，dispatch_async函数不做任何等待</li>
-<li>dispatch_sync函数“sync”意味着“同步”，就是将指定Block“同步”地追加到指定的Dispatch Queue中，在追加Block结束之前，dispatch_sync函数会一直等待</li>
-<li>一旦调用dispatch_sync函数，那么在指定的处理执行结束之前，该函数不会返回</li>
-<li>dispatch_sync函数容易引起死锁问题。如：</li>
-</ol>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">dispatch_queue_t queue = dispatch_get_main_queue();</span><br><span class="line">dispatch_sync(queue, ^&#123; <span class="type">NSLog</span>(@<span class="string">"Hello?"</span>); &#125;);</span><br></pre></td></tr></table></figure>
-
-<p>该代码在Main Dispatch Queue即主线程中执行指定的Block，并等待其执行结束。而其实主线程正在执行这些代码，所以无法执行追加到Main Dispatch Queue的Block。下面例子也一样：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">dispatch_queue_t queue &#x3D; dispatch_get_main_queue();</span><br><span class="line">dispatch_async(queue, ^&#123;</span><br><span class="line">	dispatch_sync(queue, ^&#123; NSLog(@&quot;Hello?&quot;); &#125;);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-
-<p>在Serial Dispatch Queue中也会引起相同的问题：</p>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">dispatch_queue_t queue = dispatch_queue_create(<span class="string">"com.example.gcd.MySerialDispatchQueue"</span>, <span class="type">NULL</span>);</span><br><span class="line">dispatch_async(queue, ^&#123;</span><br><span class="line">	dispatch_sync(queue, ^&#123; <span class="type">NSLog</span>(@<span class="string">"Hello?"</span>); &#125;);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-
-<h5 id="2-8、dispatch-apply"><a href="#2-8、dispatch-apply" class="headerlink" title="2.8、dispatch_apply"></a>2.8、dispatch_apply</h5><ol>
-<li>dispatch_apply函数时dispatch_async函数和Dispatch Group的关联API。该函数按指定的次数将指定的Block追加到指定的Dispatch Queue中，并等待全部处理执行结束</li>
-</ol>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">dispatch_queue_t queue = dispatch_get_global_queue(<span class="type">DISPATCH_QUEUE_DEFAULT</span>, <span class="number">0</span>);</span><br><span class="line">dispatch_apply(<span class="number">10</span>, queue, ^( size_t index ) &#123;</span><br><span class="line">	<span class="type">NSLog</span>(@<span class="string">"%zu"</span>, index);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>第一个参数为重复的次数，第二个参数为追加对象的Dispatch Queue，第三个参数为追加的处理</li>
-</ul>
-<ol start="2">
-<li>由于dispatch_apply函数与dispatch_sync函数相同，会等待处理执行结束，因此推荐在dispatch_async函数中非同步地执行dispatch_apply函数</li>
-</ol>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">dispatch_queue_t queue = dispatch_get_global_queue(<span class="type">DISPATCH_QUEUE_PRIORITY_DEFAULT</span>, <span class="number">0</span>);</span><br><span class="line">dispatch_async(queue, ^&#123;</span><br><span class="line">	dispatch_apply([array <span class="built_in">count</span>], queue, ^(size_t index) &#123;</span><br><span class="line">		<span class="type">NSLog</span>(@<span class="string">"%zu: %@"</span>, index, [array objectAtIndex: index]);</span><br><span class="line">	&#125;);</span><br><span class="line">	dispatch_async(dispatch_get_main_queue(), ^&#123;</span><br><span class="line">		<span class="type">NSLog</span>(@<span class="string">"done"</span>);</span><br><span class="line">	&#125;);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-
-<h5 id="2-9、dispatch-suspend-dispatch-resume"><a href="#2-9、dispatch-suspend-dispatch-resume" class="headerlink" title="2.9、dispatch_suspend / dispatch_resume"></a>2.9、dispatch_suspend / dispatch_resume</h5><ol>
-<li>dispatch_suspend函数挂起指定的Dispatch Queue</li>
-<li>dispatch_resume函数恢复指定的Dispatch Queue</li>
-<li>这些函数对已经执行的处理没有影响。挂起后，追加到Dispatch Queue中但尚未执行的处理在此后停止执行。而恢复则使得这些处理能够继续执行</li>
-</ol>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">dispatch_suspend(queue);</span><br><span class="line">dispatch_resume(queue);</span><br></pre></td></tr></table></figure>
-
-<h5 id="2-10、Dispatch-Semaphore"><a href="#2-10、Dispatch-Semaphore" class="headerlink" title="2.10、Dispatch Semaphore"></a>2.10、Dispatch Semaphore</h5><ol>
-<li>Dispatch Semaphore 时持有计数的信号，该计数时多线程编程中的计数类型信号。计数为0时等待，计数为1或大于1时，减去1而不等待</li>
-</ol>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dispatch_semaphore_t semaphore = dispatch_semaphore_create(<span class="number">1</span>);</span><br></pre></td></tr></table></figure>
-
-<ol start="2">
-<li>dispatch_semaphore_wait函数等待Dispatch Semahpore的计数值达到大于或者等于1。当计数值大于等于1，或者在待机中计数值大于等于1时，对该计数进行减去并从dispatch_semaphore_wait函数返回。返回值为0时，可以安全地执行需要进行排它控制的处理。处理结束时通过dispatch_semaphore_signal函数将Dispatch Semaphore的计数值加1。</li>
-</ol>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">dispatch_queue_t queue = dispatch_get_global_queue(<span class="type">DISPATCH_QUEUE_PRIORITY_DEFAULT</span>, <span class="number">0</span>);</span><br><span class="line">dispatch_semaphore_t semaphore = dispatch_semaphore_create(<span class="number">1</span>);</span><br><span class="line"><span class="type">NSMutableArray</span> *array = [[<span class="type">NSMutableArray</span> alloc] <span class="keyword">init</span>];</span><br><span class="line"><span class="keyword">for</span> (int i = <span class="number">0</span>; i &lt; <span class="number">10000</span>; i++) &#123;</span><br><span class="line">	dispatch_async(queue, ^&#123;</span><br><span class="line">		dispatch_semaphore_wait(semaphore, <span class="type">DISPATCH_TIME_FOREVER</span>);</span><br><span class="line">		[array addObject:[<span class="type">NSNumber</span> numberWithInt:i]];</span><br><span class="line">		dispatch_semaphore_signal();</span><br><span class="line">	&#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h5 id="2-11、dispatch-once"><a href="#2-11、dispatch-once" class="headerlink" title="2.11、dispatch_once"></a>2.11、dispatch_once</h5><p>dispatch_once函数时保证在应用程序执行中只执行一次指定处理的API。通过dispatch_once函数，即使在多线程环境下执行，也可以保证百分之百的安全。</p>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> dispatch_once_t pred;</span><br><span class="line">dispatch_once(&amp;pred, ^&#123;</span><br><span class="line">	<span class="comment">// 创建单例对象</span></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-
-<h4 id="3、Dispatch-Source"><a href="#3、Dispatch-Source" class="headerlink" title="3、Dispatch Source"></a>3、Dispatch Source</h4><h5 id="3-1-使用Dispatch-Source创建定时器"><a href="#3-1-使用Dispatch-Source创建定时器" class="headerlink" title="3.1 使用Dispatch Source创建定时器"></a>3.1 使用Dispatch Source创建定时器</h5><figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">dispatch_source_t timer = dispatch_source_create(<span class="type">DISPATCH_SOURCE_TYPE_TIMER</span>, <span class="number">0</span>, <span class="number">0</span>, dispatch_get_main_queue());</span><br><span class="line"></span><br><span class="line">dispatch_source_set_timer(timer, dispatch_time(<span class="type">DISPATCH_TIME_NOW</span>, 15null * <span class="type">NSEC_PER_SEC</span>), <span class="type">DISPATCH_TIME_FOREVER</span>, 1ull * <span class="type">NSEC_PRE_SEC</span>);</span><br><span class="line">dispatch_source_set_event_handler(timer, ^&#123;</span><br><span class="line">	dispatch_source_cancel(timer);</span><br><span class="line">&#125;);</span><br><span class="line">dispatch_source_set_cancel_handler(timer, ^&#123;</span><br><span class="line">	<span class="type">NSLog</span>(<span class="string">"Canceled"</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-
-<h4 id="4、总结"><a href="#4、总结" class="headerlink" title="4、总结"></a>4、总结</h4><p>最主要的内容是介绍了GCD API的使用，而贯穿整个介绍API使用过程的是同步和异步的思想。同步：会等待任务执行完成后才会进行后续代码的调用；异步：不需要等待任务执行完成就可以进行后续代码的调用。因此在使用的过程不仅仅要考虑是否开启线程、是否在主线程中执行，还要考虑调用的API是同步执行任务还是异步执行任务，这对GCD的使用是有很大益处的。</p>
-
-          
+          0、前言三年前某君共享了几本电子书给我，记得有一本里面介绍了GCD。近来想重新温习一下，电子书却已经找不到了，就又找某君让他共享了下。温故知新，现在再看这本书中的GCD确实有新的收获。第一次看的感受、是否有获取到里面的点已经记得不清了，也不能说自己完全掌握里面的知识点，但是重新温习已经看过文章或者书
+          ...
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2020/06/02/Grand-Central-Dispatch/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>

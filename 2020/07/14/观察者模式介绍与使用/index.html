@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="1、从一个简单的例子说起&amp;emsp;&amp;emsp;到了夏季，是强对流天气的高发季节，雷电暴雨随时都可能发生。而暴雨带来的破坏性也是有目共睹的（城市内涝、河水暴涨引起的洪灾），所以对极端天气的及时掌握能够让我们有足够的时间去应对极端天气的发生，减少财物的损失。&amp;emsp;&amp;emsp;这里通过代码建立一个简单的模型描述对当人们得到极端天气将要到来的消息后，做出的一系列反应。 123456789class">
+<meta property="og:type" content="article">
+<meta property="og:title" content="观察者模式介绍与使用">
+<meta property="og:url" content="http://yoursite.com/2020/07/14/%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F%E4%BB%8B%E7%BB%8D%E4%B8%8E%E4%BD%BF%E7%94%A8/index.html">
+<meta property="og:site_name" content="黎明的博客">
+<meta property="og:description" content="1、从一个简单的例子说起&amp;emsp;&amp;emsp;到了夏季，是强对流天气的高发季节，雷电暴雨随时都可能发生。而暴雨带来的破坏性也是有目共睹的（城市内涝、河水暴涨引起的洪灾），所以对极端天气的及时掌握能够让我们有足够的时间去应对极端天气的发生，减少财物的损失。&amp;emsp;&amp;emsp;这里通过代码建立一个简单的模型描述对当人们得到极端天气将要到来的消息后，做出的一系列反应。 123456789class">
+<meta property="og:image" content="http://yoursite.com/2020/07/14/%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F%E4%BB%8B%E7%BB%8D%E4%B8%8E%E4%BD%BF%E7%94%A8/1.png">
+<meta property="article:published_time" content="2020-07-14T14:00:10.000Z">
+<meta property="article:modified_time" content="2020-07-14T14:04:50.603Z">
+<meta property="article:author" content="黎明">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/2020/07/14/%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F%E4%BB%8B%E7%BB%8D%E4%B8%8E%E4%BD%BF%E7%94%A8/1.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"right","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/07/14/观察者模式介绍与使用/"/>
+
+
+
+
+
+  <title>观察者模式介绍与使用 | 黎明的博客</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">黎明的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-categories" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/07/14/%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F%E4%BB%8B%E7%BB%8D%E4%B8%8E%E4%BD%BF%E7%94%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="黎明">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="黎明的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">观察者模式介绍与使用</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-07-14T22:00:10+08:00">
+                2020-07-14
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h4 id="1、从一个简单的例子说起"><a href="#1、从一个简单的例子说起" class="headerlink" title="1、从一个简单的例子说起"></a>1、从一个简单的例子说起</h4><p>&emsp;&emsp;到了夏季，是强对流天气的高发季节，雷电暴雨随时都可能发生。而暴雨带来的破坏性也是有目共睹的（城市内涝、河水暴涨引起的洪灾），所以对极端天气的及时掌握能够让我们有足够的时间去应对极端天气的发生，减少财物的损失。<br>&emsp;&emsp;这里通过代码建立一个简单的模型描述对当人们得到极端天气将要到来的消息后，做出的一系列反应。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">HeavyRains</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">func</span> <span class="title">run</span><span class="params">()</span></span> &#123;</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">"暴雨来了"</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">func</span> <span class="title">stop</span><span class="params">()</span></span> &#123;</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">"暴雨走了"</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;<code>HeavyRains</code>是对暴雨这种极端天气的描述，<code>run()</code>方法表示暴雨正在疯狂的下，<code>stop()</code>方法表示暴雨已经结束了。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Person</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">func</span> <span class="title">doSomeThing</span><span class="params">(context: String)</span></span> &#123;</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">"\(context)"</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;<code>Person</code>的<code>doSomeThing</code>方法表示人们对暴雨的反应。<br>&emsp;&emsp;现在两个模型都有了，如何将人们对暴雨这种极端关联起来呢？我们对<code>HeavyRains</code>类做下修改：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">HeavyRains</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">let</span> person = <span class="type">Person</span>()</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">func</span> <span class="title">run</span><span class="params">()</span></span> &#123;</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">"暴雨来了"</span>)</span><br><span class="line">        person.doSomeThing(context: <span class="string">"现在暴雨来了，不能出去啦！"</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">func</span> <span class="title">stop</span><span class="params">()</span></span> &#123;</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">"暴雨走了"</span>)</span><br><span class="line">        person.doSomeThing(context: <span class="string">"暴雨走了，现在可以出去了！"</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;现在我们模拟下暴雨来临和停止；以及暴雨来临后，人们的活动是什么样的。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> heavyRains = <span class="type">HeavyRains</span>()</span><br><span class="line">heavyRains.run()</span><br><span class="line"><span class="comment">/// 暴雨来了</span></span><br><span class="line"><span class="comment">/// 现在暴雨来了，不能出去啦！</span></span><br><span class="line"></span><br><span class="line">heavyRains.stop()</span><br><span class="line"><span class="comment">/// 暴雨走了</span></span><br><span class="line"><span class="comment">/// 暴雨走了，现在可以出去了！</span></span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;现实生活中有很多这样的例子，我们可以对这些事情做个简单的总结：当某些事情发生后，依赖于这些事情的动作就会收到这些事情发生并做出相应的动作。</p>
+<p>&emsp;&emsp;上述的这个小例子是观察者模式的一个小缩影，下面就介绍下观察者模式。</p>
+<h4 id="2、观察者模式"><a href="#2、观察者模式" class="headerlink" title="2、观察者模式"></a>2、观察者模式</h4><p>&emsp;&emsp;<strong>“定义对象间一种一对多的依赖关系，使得每当一个对象改变状态，则所有依赖于它的对象都会得到通知并自动更新”</strong>，这是观察者模式（也叫订阅模式）的标准概念。下图是观察者模式的通用类图：</p>
+<img src="/2020/07/14/%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F%E4%BB%8B%E7%BB%8D%E4%B8%8E%E4%BD%BF%E7%94%A8/1.png" class="">
+
+<ul>
+<li><strong>Subject被观察者</strong>：定义被观察者必须实现的的职责，必须能够动态的添加、取消观察者。</li>
+<li><strong>Observer观察者</strong>：观察者接收到消息后，即进行update（更新方法）操作，对接收到的消息进行处理。</li>
+<li><strong>ConcreteSubject具体的被观察者</strong>：定义被观察者自己的业务逻辑，同时定义对那些事件进行通知。</li>
+<li><strong>ConcreteObserver具体的观察者</strong>：每个观察在接收到消息后的处理反应不同，各个观察者有自己的处理逻辑。</li>
+</ul>
+<p>&emsp;&emsp;被观察者（<code>Observable</code>）有三个比较重要的方法，分别是添加观察者<code>addObserver</code>，删除观察者<code>deleteObserver</code>，通知所有的观察者<code>notifyObservers</code>。</p>
+<p>&emsp;&emsp;下面我们看一下观察者模式的通用代码：</p>
+<ul>
+<li><strong>Subject被观察者：</strong></li>
+</ul>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Subject</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">var</span> observers: [<span class="type">Observer</span>] = []</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">func</span> <span class="title">addObserver</span><span class="params">(<span class="number">_</span> o: Observer)</span></span> &#123;</span><br><span class="line">        observers.append(o)</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">func</span> <span class="title">deleteObserver</span><span class="params">(<span class="number">_</span> o: Observer)</span></span> &#123;</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">let</span> index = observers.firstIndex(<span class="keyword">where</span>: &#123; $<span class="number">0</span>.indicator == o.indicator &#125;) &#123;</span><br><span class="line">            observers.remove(at: index)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">func</span> <span class="title">notifyObservers</span><span class="params">(<span class="number">_</span> context: <span class="keyword">Any</span>)</span></span> &#123;</span><br><span class="line">        observers.forEach &#123; $<span class="number">0</span>.update(context) &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>Observer观察者:</strong></li>
+</ul>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">protocol</span> <span class="title">Observer</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">var</span> indicator: <span class="type">Int</span> &#123; <span class="keyword">get</span> &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">func</span> <span class="title">update</span><span class="params">(<span class="number">_</span> context: <span class="keyword">Any</span>)</span></span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>ConcreteSubject具体的被观察者:</strong></li>
+</ul>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ConcreteSubject</span>: <span class="title">Subject</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">func</span> <span class="title">doSomethings</span><span class="params">(<span class="number">_</span> context: <span class="keyword">Any</span>)</span></span> &#123;</span><br><span class="line">        notifyObservers(context)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>ConcreteObserver具体的观察者:</strong></li>
+</ul>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ConcreteObserver</span>: <span class="title">Observer</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">var</span> indicator: <span class="type">Int</span> &#123; <span class="keyword">return</span> <span class="number">10086</span> &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">func</span> <span class="title">update</span><span class="params">(<span class="number">_</span> context: <span class="keyword">Any</span>)</span></span> &#123;</span><br><span class="line">        <span class="comment">/// 收到被观察者变化后，做出相应的动作</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="3、iOS中的观察者模式"><a href="#3、iOS中的观察者模式" class="headerlink" title="3、iOS中的观察者模式"></a>3、iOS中的观察者模式</h4><h5 id="3-1、Notification"><a href="#3-1、Notification" class="headerlink" title="3.1、Notification"></a>3.1、Notification</h5><p>&emsp;&emsp;<code>Notification</code>是iOS中最常用的观察者模式，订阅者通过<code>addObserver(_ observer: Any, selector aSelector: Selector, name aName: NSNotification.Name?, object anObject: Any?)</code>方法，向NotificaitonCenter订阅消息。<code>NotificationCenter</code>将需要转发的消息打包成<code>NSNotification</code>对象，转发给对应的订阅者。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">NotificationCenter</span>.<span class="keyword">default</span>.addObserver(<span class="keyword">self</span>, selector: #selector(receiveDidBecomeActiveNotification(<span class="number">_</span>:)), name: <span class="type">UIApplication</span>.didBecomeActiveNotification, object: <span class="literal">nil</span>)</span><br><span class="line"></span><br><span class="line"><span class="type">NotificationCenter</span>.<span class="keyword">default</span>.post(name: <span class="type">UIApplication</span>.didBecomeActiveNotification, object: <span class="literal">nil</span>)</span><br></pre></td></tr></table></figure>
+
+<h5 id="3-2、KVO"><a href="#3-2、KVO" class="headerlink" title="3.2、KVO"></a>3.2、KVO</h5><p>&emsp;&emsp;<code>KVO</code>为其他实例观察当前的某个属性提供了方法，可以实现很多松耦合结构，使代码更加灵活和强大：通过监听model的值来自动更新UI的绑定这样的工作。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyClass</span>: <span class="title">NSObject</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@objc</span> <span class="keyword">dynamic</span> <span class="keyword">var</span> date = <span class="type">Date</span>()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">var</span> myContext = <span class="number">0</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Class</span>: <span class="title">NSObject</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">var</span> myObject: <span class="type">MyClass</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">override</span> <span class="keyword">init</span>() &#123;</span><br><span class="line">        <span class="keyword">self</span>.myObject = <span class="type">MyClass</span>()</span><br><span class="line">        <span class="keyword">super</span>.<span class="keyword">init</span>()</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">self</span>.myObject.addObserver(<span class="keyword">self</span>, forKeyPath: <span class="string">"date"</span>, options: .new, context: &amp;myContext)</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">func</span> <span class="title">observeValue</span><span class="params">(forKeyPath keyPath: String?, of object: <span class="keyword">Any</span>?, change: [NSKeyValueChangeKey : <span class="keyword">Any</span>]?, context: UnsafeMutableRawPointer?)</span></span> &#123;</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">let</span> change = change, context == &amp;myContext &#123;</span><br><span class="line">            <span class="keyword">if</span> <span class="keyword">let</span> newDate = change[.newKey] <span class="keyword">as</span>? <span class="type">Date</span> &#123;</span><br><span class="line">                <span class="built_in">print</span>(<span class="string">"MyClass 日期发生变化\(newDate)"</span>)</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> obj = <span class="type">Class</span>()</span><br></pre></td></tr></table></figure>
+
+<h4 id="4、观察者模式的具体使用"><a href="#4、观察者模式的具体使用" class="headerlink" title="4、观察者模式的具体使用"></a>4、观察者模式的具体使用</h4><p>&emsp;&emsp;在iOS开发中，通过Notification观察键盘，就能收到键盘出现或者隐藏等各种事件，进行相关联的UI操作。收到对应通知后，从<code>Notification</code>实例的<code>userInfo</code>中解析出当前键盘的状态，但是每当需要使用键盘的时候，就需要解析一次，造成代码的大量冗余。有没有什么好的方法解决这个问题呢？可以使用观察者模式对<code>Notification</code>进行抽离，统一处理键盘的状态后，更新观察者，在使用的过程中就不用关心对键盘状态的解析。<br>&emsp;&emsp;键盘的<code>Notification.Name</code>有六种，包括：<code>keyboardWillShowNotification</code>、<code>keyboardDidShowNotification</code>、<code>keyboardWillHideNotification</code>、<code>keyboardDidHideNotification</code>、<code>keyboardWillChangeFrameNotification</code>、<code>keyboardDidChangeFrameNotification</code>。可以通过枚举列出与其对应的六种状态：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">enum</span> <span class="title">Status</span> </span>&#123;</span><br><span class="line">    <span class="keyword">case</span> willShow</span><br><span class="line">    <span class="keyword">case</span> didShow</span><br><span class="line">    <span class="keyword">case</span> willHide</span><br><span class="line">    <span class="keyword">case</span> didHide</span><br><span class="line">    <span class="keyword">case</span> willChangeFrame</span><br><span class="line">    <span class="keyword">case</span> didChangeFrame</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;枚举出键盘的六种状态后，我们可以将与键盘相关的<code>Notification.Name</code>和<code>Selector</code>与枚举关联起来：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">extension</span> <span class="title">KeyBoardObserver</span>.<span class="title">Status</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">var</span> notificationName: <span class="type">Notification</span>.<span class="type">Name</span> &#123;</span><br><span class="line">        <span class="keyword">switch</span> <span class="keyword">self</span> &#123;</span><br><span class="line">        <span class="keyword">case</span> .willShow:</span><br><span class="line">            <span class="keyword">return</span> <span class="type">UIResponder</span>.keyboardWillShowNotification</span><br><span class="line">        <span class="keyword">case</span> .didShow:</span><br><span class="line">            <span class="keyword">return</span> <span class="type">UIResponder</span>.keyboardDidShowNotification</span><br><span class="line">        <span class="keyword">case</span> .willHide:</span><br><span class="line">            <span class="keyword">return</span> <span class="type">UIResponder</span>.keyboardWillHideNotification</span><br><span class="line">        <span class="keyword">case</span> .didHide:</span><br><span class="line">            <span class="keyword">return</span> <span class="type">UIResponder</span>.keyboardDidHideNotification</span><br><span class="line">        <span class="keyword">case</span> .willChangeFrame:</span><br><span class="line">            <span class="keyword">return</span> <span class="type">UIResponder</span>.keyboardWillChangeFrameNotification</span><br><span class="line">        <span class="keyword">case</span> .didChangeFrame:</span><br><span class="line">            <span class="keyword">return</span> <span class="type">UIResponder</span>.keyboardDidChangeFrameNotification</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">var</span> selector: <span class="type">Selector</span> &#123;</span><br><span class="line">        <span class="keyword">switch</span> <span class="keyword">self</span> &#123;</span><br><span class="line">        <span class="keyword">case</span> .willShow:</span><br><span class="line">            <span class="keyword">return</span> #selector(<span class="type">KeyBoardObserver</span>.keyBoardWillShow(<span class="number">_</span>:))</span><br><span class="line">        <span class="keyword">case</span> .didShow:</span><br><span class="line">            <span class="keyword">return</span> #selector(<span class="type">KeyBoardObserver</span>.keyBoardDidShow(<span class="number">_</span>:))</span><br><span class="line">        <span class="keyword">case</span> .willHide:</span><br><span class="line">            <span class="keyword">return</span> #selector(<span class="type">KeyBoardObserver</span>.keyBoardWillHide(<span class="number">_</span>:))</span><br><span class="line">        <span class="keyword">case</span> .didHide:</span><br><span class="line">            <span class="keyword">return</span> #selector(<span class="type">KeyBoardObserver</span>.keyBoardDidHide(<span class="number">_</span>:))</span><br><span class="line">        <span class="keyword">case</span> .willChangeFrame:</span><br><span class="line">            <span class="keyword">return</span> #selector(<span class="type">KeyBoardObserver</span>.keyBoardWillChangeFrame(<span class="number">_</span>:))</span><br><span class="line">        <span class="keyword">case</span> .didChangeFrame:</span><br><span class="line">            <span class="keyword">return</span> #selector(<span class="type">KeyBoardObserver</span>.keyBoardDidChanageFrame(<span class="number">_</span>:))</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;在写于键盘相关的代码时，需要从<code>Notification</code>的<code>userInfo</code>中取出键盘的属性。这里可以使用一个<code>struct</code>来接收解析到的键盘属性：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">struct</span> <span class="title">KeyBoradInfo</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">private</span>(<span class="keyword">set</span>) <span class="keyword">var</span> beginFrame: <span class="type">CGRect</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">private</span>(<span class="keyword">set</span>) <span class="keyword">var</span> endFrame: <span class="type">CGRect</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">private</span>(<span class="keyword">set</span>) <span class="keyword">var</span> animationDuration: <span class="type">TimeInterval</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">private</span>(<span class="keyword">set</span>) <span class="keyword">var</span> animationOptions: <span class="type">UIView</span>.<span class="type">AnimationOptions</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">private</span>(<span class="keyword">set</span>) <span class="keyword">var</span> isLocal: <span class="type">Bool</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">init</span>?(userInfo: [<span class="type">AnyHashable</span>: <span class="type">Any</span>]) &#123;</span><br><span class="line">        <span class="keyword">guard</span> <span class="keyword">let</span> beginFrame = (userInfo[<span class="type">UIResponder</span>.keyboardFrameBeginUserInfoKey] <span class="keyword">as</span>? <span class="type">NSValue</span>)?.cgRectValue,</span><br><span class="line">            <span class="keyword">let</span> endFrame = (userInfo[<span class="type">UIResponder</span>.keyboardFrameEndUserInfoKey] <span class="keyword">as</span>? <span class="type">NSValue</span>)?.cgRectValue,</span><br><span class="line">            <span class="keyword">let</span> animationDuration = (userInfo[<span class="type">UIResponder</span>.keyboardAnimationDurationUserInfoKey] <span class="keyword">as</span>? <span class="type">NSNumber</span>)?.doubleValue,</span><br><span class="line">            <span class="keyword">let</span> curve = (userInfo[<span class="type">UIResponder</span>.keyboardAnimationCurveUserInfoKey] <span class="keyword">as</span>? <span class="type">NSNumber</span>)?.intValue,</span><br><span class="line">            <span class="keyword">let</span> isLocal = (userInfo[<span class="type">UIResponder</span>.keyboardIsLocalUserInfoKey] <span class="keyword">as</span>? <span class="type">NSNumber</span>)?.boolValue  <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">self</span>.beginFrame = beginFrame</span><br><span class="line">        <span class="keyword">self</span>.endFrame = endFrame</span><br><span class="line">        <span class="keyword">self</span>.animationDuration = animationDuration</span><br><span class="line">        <span class="keyword">self</span>.animationOptions = <span class="type">UIView</span>.<span class="type">AnimationOptions</span>(rawValue: <span class="type">UInt</span>(curve))</span><br><span class="line">        <span class="keyword">self</span>.isLocal = isLocal</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;解析后得到的<code>KeyBoradInfo</code>可以通过闭包调用传递出去：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typealias</span> <span class="type">Handler</span> = (<span class="type">KeyBoradInfo</span>) -&gt; <span class="type">Void</span></span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;这些工作都准备好后，下来就是核心代码：添加观察者、删除观察者、通知观察者：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">extension</span> <span class="title">KeyBoardObserver</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">func</span> <span class="title">addObserver</span><span class="params">(status: Status, handler: @escaping Handler)</span></span> &#123;</span><br><span class="line">        <span class="type">NotificationCenter</span>.<span class="keyword">default</span>.addObserver(<span class="keyword">self</span>, selector: status.selector, name: status.notificationName, object: <span class="literal">nil</span>)</span><br><span class="line">        handlers[status] = handler</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">func</span> <span class="title">removeObserver</span><span class="params">(status: Status)</span></span> &#123;</span><br><span class="line">        <span class="type">NotificationCenter</span>.<span class="keyword">default</span>.removeObserver(<span class="keyword">self</span>, name: status.notificationName, object: <span class="literal">nil</span>)</span><br><span class="line">        handlers[status] = <span class="literal">nil</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">func</span> <span class="title">removeAllObserver</span><span class="params">()</span></span> &#123;</span><br><span class="line">        removeObserver(status: .willShow)</span><br><span class="line">        removeObserver(status: .didShow)</span><br><span class="line">        removeObserver(status: .willHide)</span><br><span class="line">        removeObserver(status: .didHide)</span><br><span class="line">        removeObserver(status: .didChangeFrame)</span><br><span class="line">        removeObserver(status: .willChangeFrame)</span><br><span class="line">        handlers = [:]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;下面代码是键盘通知相关的<code>Selector</code>以及<code>notifyObserver</code>的处理：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">extension</span> <span class="title">KeyBoardObserver</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@objc</span> <span class="keyword">private</span> <span class="function"><span class="keyword">func</span> <span class="title">keyBoardWillShow</span><span class="params">(<span class="number">_</span> notification: Notification)</span></span> &#123;</span><br><span class="line">        handle(notification: notification, with: .willShow)</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@objc</span> <span class="keyword">private</span> <span class="function"><span class="keyword">func</span> <span class="title">keyBoardDidShow</span><span class="params">(<span class="number">_</span> notification: Notification)</span></span> &#123;</span><br><span class="line">        handle(notification: notification, with: .didShow)</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@objc</span> <span class="keyword">private</span> <span class="function"><span class="keyword">func</span> <span class="title">keyBoardWillHide</span><span class="params">(<span class="number">_</span> notification: Notification)</span></span> &#123;</span><br><span class="line">        handle(notification: notification, with: .willHide)</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@objc</span> <span class="keyword">private</span> <span class="function"><span class="keyword">func</span> <span class="title">keyBoardDidHide</span><span class="params">(<span class="number">_</span> notification: Notification)</span></span> &#123;</span><br><span class="line">        handle(notification: notification, with: .didHide)</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@objc</span> <span class="keyword">private</span> <span class="function"><span class="keyword">func</span> <span class="title">keyBoardWillChangeFrame</span><span class="params">(<span class="number">_</span> notification: Notification)</span></span> &#123;</span><br><span class="line">        handle(notification: notification, with: .willChangeFrame)</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@objc</span> <span class="keyword">private</span> <span class="function"><span class="keyword">func</span> <span class="title">keyBoardDidChanageFrame</span><span class="params">(<span class="number">_</span> notification: Notification)</span></span> &#123;</span><br><span class="line">        handle(notification: notification, with: .didChangeFrame)</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">func</span> <span class="title">handle</span><span class="params">(notification: Notification, with status: Status)</span></span> &#123;</span><br><span class="line">        <span class="keyword">guard</span> <span class="keyword">let</span> userInfo = notification.userInfo, <span class="keyword">let</span> info = <span class="type">KeyBoradInfo</span>(userInfo: userInfo) <span class="keyword">else</span> &#123; <span class="keyword">return</span> &#125;</span><br><span class="line">        handlers[status]?(info)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>&emsp;&emsp;这里<code>KeyBoardObserver</code>类是以观察者的身份存在，对键盘的各种状态进行观察、处理后，将处理后的键盘信息传递给持有<code>KeyBoardObserver</code>的类。持有<code>KeyBoardObserver</code>的类减少了对键盘各个状态属性解析的代码，只需要在收到<code>KeyBoardObserver</code>转发来的键盘属性，做出相关联UI处理就可以了。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/06/20/iOS%E8%B0%93%E8%AF%8D%E7%BC%96%E7%A8%8B%E7%AE%80%E8%A6%81%E6%8C%87%E5%8D%97/" rel="next" title="iOS谓词编程简要指南">
+                <i class="fa fa-chevron-left"></i> iOS谓词编程简要指南
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/uploads/avatar.png"
+                alt="黎明" />
+            
+              <p class="site-author-name" itemprop="name">黎明</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+                <a href="/archives">
+                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#1、从一个简单的例子说起"><span class="nav-number">1.</span> <span class="nav-text">1、从一个简单的例子说起</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2、观察者模式"><span class="nav-number">2.</span> <span class="nav-text">2、观察者模式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3、iOS中的观察者模式"><span class="nav-number">3.</span> <span class="nav-text">3、iOS中的观察者模式</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#3-1、Notification"><span class="nav-number">3.1.</span> <span class="nav-text">3.1、Notification</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-2、KVO"><span class="nav-number">3.2.</span> <span class="nav-text">3.2、KVO</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4、观察者模式的具体使用"><span class="nav-number">4.</span> <span class="nav-text">4、观察者模式的具体使用</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">黎明</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

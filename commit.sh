@@ -1,8 +1,5 @@
 #!/bin/bash
 
-echo '切换到上一级目录\n'
-cd ..
-
 # 解决使用git add命令时报错LF will be replaced by CRLF的问题
 echo '执行命令：git config auto.crlf true\n'
 git config auto.crlf true

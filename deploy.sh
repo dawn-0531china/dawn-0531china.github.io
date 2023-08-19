@@ -25,8 +25,8 @@ echo "执行命令：commit -m 'deploy gitbook'"
 git commit -m 'deploy gitbook'
 
 # 发布到 https://<USERNAME>.github.io/<REPO>
-echo "执行命令：git push -f 仓库地址.git master:gh-pages"
-git push -f git@github.com:dawn-0531china/dawn-0531china.github.io.git master:gh-pages
+echo "执行命令：git push -f 仓库地址.git main:gh-pages"
+git push -f git@github.com:dawn-0531china/dawn-0531china.github.io.git main:gh-pages
 
 # 返回到上一次的工作目录
 echo "回到刚才工作目录"

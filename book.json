@@ -17,7 +17,8 @@
          "code",
          "highlight",
          "livereload",
-         "page-toc-button"
+         "-page-toc-button",
+         "-page-treeview"
     ],
     "pluginsConfig": {
         "page-toc-button": {

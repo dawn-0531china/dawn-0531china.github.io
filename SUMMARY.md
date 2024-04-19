@@ -8,4 +8,5 @@
     * [第一节：WKWebView的一些处理](Chapter2/WKWebView的一些处理.md)
     * [第二节：SwiftLint使用说明](Chapter2/SwiftLint使用说明.md)
     * [第三节：Xcode自定义环境配置](Chapter2/Xcode自定义环境配置.md)
+    * [第四节：Swift Tips](Chapter2/Swift Tips.md)
 

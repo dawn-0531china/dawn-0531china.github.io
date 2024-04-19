@@ -1,5 +1,7 @@
 #!/bin/bash
 
+rm -rf _book
+
 # 构建Gitbook
 echo '执行命令：gitbook build .'
 gitbook build .

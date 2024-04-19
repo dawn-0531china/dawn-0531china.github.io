@@ -47,3 +47,14 @@ static var isTest: Bool {
     return value == "Test"
 }
 ```
+
+##### 5、与CocoaPods结合使用
+
+可以在podfile中配置库的安装环境。
+
+```ruby
+pod 'DoraemonKit/Core', '~> 3.0.4', :configurations => ['Release_Test']
+pod 'FMDB', '~> 2.7.5', :configurations => ['Release_Test']
+pod 'GCDWebServer', :configurations => ['Release_Test']
+```
+
